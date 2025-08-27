@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import type { Revalidate } from "@repo/next-common";
+import { Revalidate } from "../handlers/cache-handler.types";
 import { workAsyncStorage } from "next/dist/server/app-render/work-async-storage.external.js";
 import type { IncrementalCache } from "next/dist/server/lib/incremental-cache";
-import type { CacheHandler } from "../cache-handler";
-import { TIME_ONE_YEAR } from "../constants";
+import { CacheHandler } from "../handlers/cache-handler";
+import { CACHE_ONE_YEAR } from "next/dist/lib/constants";
+import { CachedRouteKind } from "next/dist/server/response-cache";
 
 declare global {
   var __incrementalCache: IncrementalCache | undefined;
@@ -301,7 +302,7 @@ export function neshClassicCache<
     const cacheData = await cacheHandler.get(key, {
       revalidate,
       tags: allTags,
-      kindHint: "fetch",
+      kind: "FETCH" as unknown as any,
       fetchUrl: "neshClassicCache",
     });
 
@@ -318,13 +319,13 @@ export function neshClassicCache<
     cacheHandler.set(
       key,
       {
-        kind: "FETCH",
+        kind: "FETCH" as CachedRouteKind.FETCH,
         data: {
           body: resultSerializer(data),
           headers: {},
           url: "neshClassicCache",
         },
-        revalidate: revalidate || TIME_ONE_YEAR,
+        revalidate: revalidate || CACHE_ONE_YEAR,
       },
       {
         revalidate,
